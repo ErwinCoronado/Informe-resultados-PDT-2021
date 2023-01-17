@@ -1,0 +1,297 @@
+---
+title: "Informe PDT 2022"
+author: "Erwin Coronado"
+date: "13-01-2022"
+output: html_document
+---
+
+---
+<style>
+body {
+text-align: justify}
+</style>
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+library(ggthemes)
+library(plotly)
+library(readxl)
+library(printr)
+library(knitr)
+library(GGally)
+library(tm)
+library (wordcloud2)
+library(stringr)
+library(skimr)
+library(GGally)
+library(cluster)
+library(factoextra)
+```
+
+
+
+
+````{r  include=FALSE}
+pdt <- read_excel("puntajes_pdt_ad_2022.xlsx")
+
+pdt1 <- pdt
+
+
+
+
+pdt1$Sexo <- as.factor(pdt1$Sexo)
+pdt1$Curso <- as.factor(pdt1$Curso) 
+````
+
+## Introducción
+***
+El siguiente informe presenta los resultados obtenidos en la prueba de transición (PDT) admisión 2022. La generación 2021 se constituyó de 104 alumnos, de los cuales se inscribieron 102 estudiantes, rindiendo la PDT 101 y de los cuales 17 estudiantes no aceptaron compartir sus puntajes. Por lo tanto, el desglose de estudiantes que rindieron la evalaución y de los cuales contamos son sus resultados para la la generación del presente informe, es el siguiente:
+
+1. 86 estudiantes Comprensión Lectora (CL) y Matemática (MAT)
+
+2. 34 estudiantes Historia y Geografía (HyCS)
+
+3. 67 estudiantes Ciencias (CS)
+
+
+
+
+***
+
+### Presentación de resultados iniciales
+
+Las siguientes tablas muestran los promedios, junto a los puntaje mínimo y máximo alcanzados por cada uno de los cursos.
+
+***
+
+````{r echo=FALSE, message=FALSE, warning=FALSE}
+pdt1 %>% group_by( Curso) %>% summarise("Prom. CL"=round(mean(CL),1), PMín=min(CL), 
+                              PMáx=max(CL))
+
+````
+
+***
+````{r echo=FALSE, message=FALSE, warning=FALSE}
+pdt1 %>% group_by( Curso) %>% summarise("Prom. MAT"=round(mean(MAT),1), PMín=min(MAT), 
+                              PMáx=max(MAT))
+
+````
+
+````{r echo=FALSE, message=FALSE, warning=FALSE}
+pdt1 %>% group_by( Curso) %>% summarise("Prom. HyCS"=round(mean(HyCS,na.rm=TRUE),1),PMín=min(HyCS,na.rm=TRUE), PMáx=max(HyCS, na.rm=TRUE))
+
+````
+````{r echo=FALSE, message=FALSE, warning=FALSE}
+pdt1 %>% group_by( Curso) %>% summarise( "Prom. CS"=round(mean(CS,na.rm=TRUE),1),
+                                        PMín=min(CS,na.rm=TRUE), 
+                                        PMáx=max(CS,na.rm=TRUE))
+
+````
+
+### Visualizaciones de resultados
+
+***
+
+````{r message=FALSE, warning=FALSE, include=FALSE}
+g1 <- pdt1 %>%
+  ggplot( aes(x=Curso, y=CL, group= Curso)) +
+  geom_boxplot(outlier.colour = "blue") +
+  #theme_ipsum() +
+  theme(
+    legend.position="none",
+    plot.title = element_text(size=11)
+  ) + 
+  #ggtitle(" Promedio Finales I Semestre 2021") +
+  xlab("Cursos") +
+  ylab("Puntajes Lenguaje por cursos") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  stat_boxplot(geom = "errorbar",     
+               width = 0.5) +
+  stat_summary(fun=mean, geom="point", shape=18,
+               size=3, color="red")
+
+
+````
+***
+
+### Gráfico N°1
+
+***
+
+
+El siguiente gráfico presenta el comportamiento de los puntajes obtenidos en Comprensión Lectora por cada curso. 
+
+
+***
+
+````{r echo=FALSE}
+ggplotly(g1)
+````
+
+***
+
+
+````{r message=FALSE, warning=FALSE, include=FALSE}
+g2 <- pdt1 %>%
+  ggplot( aes(x=Curso, y=MAT, group= Curso)) +
+  geom_boxplot(outlier.colour = "blue") +
+  #theme_ipsum() +
+  theme(
+    legend.position="none",
+    plot.title = element_text(size=11)
+  ) + 
+  xlab("Cursos") +
+  ylab("Puntajes Matemática por cursos") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  stat_summary(fun=mean, geom="point", shape=18,
+               size=3, color="red")
+````
+
+
+
+### Gráfico N°2
+
+El siguiente gráfico presenta el comportamiento de los puntajes obtenidos en Matemática por cada curso. 
+
+***
+
+````{r echo=FALSE}
+ggplotly(g2)
+````
+
+***
+
+
+````{r message=FALSE, warning=FALSE, include=FALSE}
+g3 <- pdt1 %>%
+  ggplot( aes(x=Curso, y=HyCS, group= Curso)) +
+  geom_boxplot(outlier.colour = "blue") +
+  #theme_ipsum() +
+  theme(
+    legend.position="none",
+    plot.title = element_text(size=11)
+  ) + 
+  #ggtitle(" Promedio Finales I Semestre 2021") +
+  xlab("Cursos") +
+  ylab("Puntajes Historia y Ciencias sociales por cursos") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  stat_summary(fun=mean, geom="point", shape=18,
+               size=3, color="red")
+````
+### Gráfico N°3
+
+El siguiente gráfico presenta el comportamiento de los puntajes obtenidos en Historia y Ciencias sociales por cada curso.
+
+***
+````{r echo=FALSE, warning=FALSE}
+ggplotly(g3)
+````
+
+
+````{r message=FALSE, warning=FALSE, include=FALSE}
+g4 <- pdt1 %>%
+  ggplot( aes(x=Curso, y=CS, group= Curso)) +
+  geom_boxplot(outlier.colour = "blue") +
+  #theme_ipsum() +
+  theme(
+    legend.position="none",
+    plot.title = element_text(size=11)
+  ) + 
+  #ggtitle(" Promedio Finales I Semestre 2021") +
+  xlab("Cursos") +
+  ylab("Puntajes Ciencias por cursos") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  stat_summary(fun=mean, geom="point", shape=18,
+               size=3, color="red")
+````
+### Gráfico N°4
+
+El siguiente gráfico presenta el comportamiento de los puntajes obtenidos en Ciencias por cada curso.
+
+***
+````{r echo=FALSE, warning=FALSE}
+ggplotly(g4)
+````
+***
+````{r message=FALSE, warning=FALSE, include=FALSE}
+g5 <- pdt1 %>%
+  ggplot(aes(x=Sexo, y=CL, group= Sexo)) +
+  geom_boxplot(outlier.colour = "blue") +
+  #theme_ipsum() +
+  theme(
+    legend.position="none",
+    plot.title = element_text(size=11)
+  ) + 
+  #ggtitle(" Promedio Finales I Semestre 2021") +
+  xlab("Género") +
+  ylab("Resultados por Género") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  stat_boxplot(geom = "errorbar",     
+               width = 0.5) +
+  stat_summary(fun=mean, geom="point", shape=18,
+               size=3, color="red")
+````
+
+### Gráfico N°5
+
+El siguiente gráfico presenta el comportamiento de los puntajes obtenidos en Comprensión lectora por género.
+
+***
+````{r echo=FALSE}
+ggplotly(g5)
+````
+
+***
+````{r message=FALSE, warning=FALSE, include=FALSE}
+g6 <- pdt1 %>%
+  ggplot(aes(x=Sexo, y=MAT, group= Sexo)) +
+  geom_boxplot(outlier.colour = "blue") +
+  #theme_ipsum() +
+  theme(
+    legend.position="none",
+    plot.title = element_text(size=11)
+  ) + 
+  #ggtitle(" Promedio Finales I Semestre 2021") +
+  xlab("Género") +
+  ylab("Resultados por Género") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  stat_boxplot(geom = "errorbar",     
+               width = 0.5) +
+  stat_summary(fun=mean, geom="point", shape=18,
+               size=3, color="red")
+```
+### Gráfico N°6
+
+El siguiente gráfico presenta el comportamiento de los puntajes obtenidos en Matemática por género.
+
+***
+````{r echo=FALSE}
+ggplotly(g6)
+````
+
+### Gráficos de distribución de puntajes por Sector 
+
+Los gráficos que acontinuación se presentan, muestran la distribución de puntajes. Se incorpora en cada gráfico, la curva de densidad y la perpendicular correspondiente a la **mediana**. 
+
+***
+````{r echo=FALSE}
+df4 <- pdt1 %>% select(CL)
+g7 <- df4 %>% ggplot(aes(x=CL)) + 
+  geom_histogram(aes(y=..density..), colour="black", fill="white", bins =10)+
+  labs(title = "Distribución de puntajes lenguaje",x="Puntajes obtenidos")+
+  geom_vline(xintercept=median(df4$CL), linetype="dashed", color = "red")+
+  geom_density(alpha=.2, fill="green") 
+````
+````{r echo=FALSE}
+ggplotly(g7) 
+````
+
+
+
+
+
+
